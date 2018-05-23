@@ -14,29 +14,42 @@ static int cache1[CACHESIZE], cache2[CACHESIZE], cache3[CACHESIZE], cache4[CACHE
 
 /*	memory management, code density, Cache emulation - statistics generation */
 /*	Generated for CSC 315 Lab 5 */
-void init_cache() {
+void init_cache(void) {
   
 } 
 
 
 /* This function gets called with each "read" reference to memory */
 
-mem_read(int *mp)
-	{
+mem_read(int *mp){
+    uint8_t index;
+    uint8_t offset;
+    uint64_t tag;
 
-	/* printf("Memory read from location %p\n", mp);  */
+    if(sizeof(mp) == 32) {
 
-	}
+    } else {
+	
+    }
+    /* printf("Memory read from location %p\n", mp);  */
+}
 
 
 /* This function gets called with each "write" reference to memory */
 
-mem_write(int *mp)
-	{
+mem_write(int *mp) {
+    uint8_t index;
+    uint8_t offset;
+    uint64_t tag;
 
-	/* printf("Memory write to location %p\n", mp); */
+    if(sizeof(mp) == 32) {
 
-	}
+    } else {
+	
+    }
+
+    /* printf("Memory write to location %p\n", mp); */
+}
 
 
 /* Statically define the arrays a, b, and mult, where mult will become the cross product of a and b, i.e., a x b. */
