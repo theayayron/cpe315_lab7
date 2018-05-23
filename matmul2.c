@@ -4,11 +4,18 @@
 #define AMAX 10			/* Maximum (square) array size */
 
 #define CACHESIM 1		/* Set to 1 if simulating Cache */
+#define CACHESIZE 16            /* Either 16 or 256 */
+#define ASSOCIATIONS 1          /* Set to 1, 2, or 4 */
 
 #include <stdio.h>
 
+static int cache1[CACHESIZE], cache2[CACHESIZE], cache3[CACHESIZE], cache4[CACHESIZE];
+
 /*	memory management, code density, Cache emulation - statistics generation */
 /*	Generated for CSC 315 Lab 5 */
+void init_cache() {
+  
+} 
 
 
 /* This function gets called with each "read" reference to memory */
@@ -75,7 +82,6 @@ void matmul( r1, c1, c2 )
 
         }
    }
-
 
 
 
