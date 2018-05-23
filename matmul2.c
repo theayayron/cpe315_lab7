@@ -3,7 +3,7 @@
 
 #define AMAX 10			/* Maximum (square) array size */
 
-#define CACHESIM 0		/* Set to 1 if simulating Cache */
+#define CACHESIM 1		/* Set to 1 if simulating Cache */
 
 #include <stdio.h>
 
