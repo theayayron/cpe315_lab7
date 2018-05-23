@@ -3,6 +3,7 @@
 #define CACHESIZE 16            /* Either 16 or 256 */
 #define ASSOCIATIONS 1          /* Set to 1, 2, or 4 */
 
+#include "matmul2.h"
 #include <stdio.h>
 
 static int cache1[CACHESIZE], cache2[CACHESIZE], cache3[CACHESIZE], cache4[CACHESIZE];
