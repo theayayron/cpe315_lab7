@@ -6,14 +6,16 @@
 #include "matmul2.h"
 #include <stdio.h>
 
-static int cache1[CACHESIZE], cache2[CACHESIZE], cache3[CACHESIZE], cache4[CACHESIZE];
+static int cache1[CACHESIZE];
+static int cache2[CACHESIZE];
+static int cache3[CACHESIZE];
+static int cache4[CACHESIZE];
 
 /*	memory management, code density, Cache emulation - statistics generation */
 /*	Generated for CSC 315 Lab 5 */
 void init_cache() {
 
 }
-
 
 /* This function gets called with each "read" reference to memory */
 mem_read(int *mp) {
@@ -84,7 +86,6 @@ int main(void) {
     }
 
     /* Storing elements of first matrix. */
-    printf("\nEnter elements of matrix 1:\n");
     for(i=0; i<r1; ++i) {
         for (j = 0; j < c1; ++j) {
             a[i][j] = i + j; // build sample data
@@ -93,7 +94,6 @@ int main(void) {
     }
 
     /* Storing elements of second matrix. */
-    printf("\nEnter elements of matrix 2:\n");
     for(i=0; i<r2; ++i) {
         for (j = 0; j < c2; ++j) {
             b[i][j] = 10 + i + j;
