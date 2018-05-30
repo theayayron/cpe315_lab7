@@ -6,8 +6,6 @@
 
 typedef struct _cache_line {
   uint8_t v;
-  uint8_t m;
-  uint8_t index;
   uint64_t tag; 
 } cache_line;
 

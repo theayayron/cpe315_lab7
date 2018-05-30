@@ -5,8 +5,9 @@
 
 #include "matmul2.h"
 #include <stdio.h>
+#include <stdlib.h>
 
-int num_reads = 0, hits = 0;
+int num_reads = 0, hits = 0, misses = 0, num_writes = 0;
 
 static cache_line cache1[CACHESIZE];
 static cache_line cache2[CACHESIZE];
@@ -19,30 +20,57 @@ void init_cache(void) {
     int i = 0;
     for(; i < CACHESIZE; i++) {
 	cache1[i].v = 0;
-	cache1[i].m = 0;
-	cache1[i].index = i;
 	cache1[i].tag = 0;
 
 	if(CACHESIZE > 1) {
 	    cache2[i].v = 0;
-	    cache2[i].m = 0;
-	    cache2[i].index = i;
 	    cache2[i].tag = 0;
 	}
 
 	if (CACHESIZE == 4) {
 	    cache3[i].v = 0;
-	    cache3[i].m = 0;
-	    cache3[i].index = i;
 	    cache3[i].tag = 0;
 
 	    cache4[i].v = 0;
-	    cache4[i].m = 0;
-	    cache4[i].index = i;
 	    cache4[i].tag = 0;
 	}
     }
 } 
+
+/* extracts fields based on *mp */
+void extract_fields(int *mp, uin8_t *index, uin8_t *offset, uint64_t *tag) {
+    offset = isolate_bits((int)mp, 1, 0);
+
+    if( sizeof(mp) == 32 ) {
+        if (CACHESIZE == 16) {
+            // indes size = 4 bits
+            *index = isolate_bits((int)mp, 5, 2);
+
+            // tag size = 32 - 4 -2
+            *tag = isolate_bits((int)mp, 31, 6);
+        } else {
+            // index size = 7 bits
+            *index = isolate_bits((int)mp, 8, 2);
+
+            // tag = 32 - 7 - 2
+            *tag = isolate_bits((int)mp, 31, 9);
+        }
+    } else {
+        if (CACHESIZE == 16) {
+            // index size = 4 bits
+            *index = isolate_bits((int)mp, 5, 2);
+
+            // tag size = 64 - 4 -2
+            *tag = isolate_bits((int)mp, 61, 6);
+        } else {
+            // index size = 7 bits
+            *index = isolate_bits((int)mp, 8, 2);
+
+            // tag = 64 - 7 - 2
+            *tag = isolate_bits((int)mp, 61, 9);
+        }
+    }    
+}
 
 
 /* This function gets called with each "read" reference to memory */
@@ -52,37 +80,8 @@ mem_read(int *mp){
     uint8_t offset; // 2 bits
     uint64_t tag; //
 
-    offset = isolate_bits((int)mp, 1, 0);
+    extract_fields(mp, &index, &offset, &tag);
 
-    if( sizeof(mp) == 32 ) {
-        if (CACHESIZE == 16) {
-            // indes size = 4 bits
-            index = isolate_bits((int)mp, 5, 2);
-
-            // tag size = 32 - 4 -2
-            tag = isolate_bits((int)mp, 31, 6);
-        } else {
-            // index size = 7 bits
-            index = isolate_bits((int)mp, 8, 2);
-
-            // tag = 32 - 7 - 2
-            tag = isolate_bits((int)mp, 31, 9);
-        }
-    } else {
-        if (CACHESIZE == 16) {
-            // index size = 4 bits
-            index = isolate_bits((int)mp, 5, 2);
-
-            // tag size = 64 - 4 -2
-            tag = isolate_bits((int)mp, 61, 6);
-        } else {
-            // index size = 7 bits
-            index = isolate_bits((int)mp, 8, 2);
-
-            // tag = 64 - 7 - 2
-            tag = isolate_bits((int)mp, 61, 9);
-        }
-    }
     printf("Memory read from location %p\n", mp);
 }
 
@@ -91,30 +90,27 @@ mem_write(int *mp) {
     uint8_t index;
     uint8_t offset;
     uint64_t tag;
+    int cache_num = rand() % ASSOCIATIONS;
+    num_writes++;
+    misses++; /* write through always misses */
 
-    if(sizeof(mp) == 32) {
+    extract_fields(mp, &index, &offset, &tag);
 
-	if(/* modify flag set*/) {
-	    /* write data to memory */
-	} else {
-	    /* set modify flag*/
-	}
-
-	if(/* tag is found*/) {
-	    /* HIT! */
-	    /* change data */
-	    /* set modify tag */
-	} else { /* tag not found */
-	    /* MISS! */
-	    /* change tag to new tag */
-	    /* load new data into cache */
-	}
-
-
+    /* write data into random cache */
+    if(cache_num == 0) {
+ 	cache1[index].v = 1;
+	cache1[index].tag = tag;
+    } else if (cache_num == 1) {
+	cache2[index].v = 1;
+	cache2[index].tag = tag;
+    } else if (cache_num == 2) {
+	cache3[index].v = 1;
+	cache3[index].tag = tag;
     } else {
-	
+	cache4[index].v = 1;
+	cache4[index].tag = tag;
     }
-
+    
     printf("Memory write to location %p\n", mp);
 }
 
