@@ -6,13 +6,41 @@
 #include "matmul2.h"
 #include <stdio.h>
 
-static int cache1[CACHESIZE], cache2[CACHESIZE], cache3[CACHESIZE], cache4[CACHESIZE];
+static cache_line cache1[CACHESIZE], cache2[CACHESIZE], cache3[CACHESIZE], cache4[CACHESIZE];
 
 /*	memory management, code density, Cache emulation - statistics generation */
 /*	Generated for CSC 315 Lab 5 */
-<<<<<<< HEAD
 void init_cache(void) {
-  
+    int i = 0;
+    for(; i < CACHESIZE; i++) {
+	cache1[i].v = 0;
+	cache1[i].m = 0;
+	cache1[i].index = i;
+	cache1[i].data = 0;
+	cache1[i].tag = 0;
+
+	if(CACHESIZE > 1) {
+	    cache2[i].v = 0;
+	    cache2[i].m = 0;
+	    cache2[i].index = i;
+	    cache2[i].data = 0;
+	    cache2[i].tag = 0;
+	} 
+
+	if (CACHESIZE == 4) {
+	    cache3[i].v = 0;
+	    cache3[i].m = 0;
+	    cache3[i].index = i;
+	    cache3[i].data = 0;
+	    cache3[i].tag = 0;
+
+	    cache4[i].v = 0;
+	    cache4[i].m = 0;
+	    cache4[i].index = i;
+	    cache4[i].data = 0;
+	    cache4[i].tag = 0;
+	}
+    }
 } 
 
 
@@ -32,8 +60,6 @@ mem_read(int *mp){
 }
 
 /* This function gets called with each "write" reference to memory */
-<<<<<<< HEAD
-
 mem_write(int *mp) {
     uint8_t index;
     uint8_t offset;
