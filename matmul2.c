@@ -8,10 +8,10 @@
 
 int num_reads = 0, hits = 0;
 
-static int cache1[CACHESIZE];
-static int cache2[CACHESIZE];
-static int cache3[CACHESIZE];
-static int cache4[CACHESIZE];
+static cache_line cache1[CACHESIZE];
+static cache_line cache2[CACHESIZE];
+static cache_line cache3[CACHESIZE];
+static cache_line cache4[CACHESIZE];
 
 /*	memory management, code density, Cache emulation - statistics generation */
 /*	Generated for CSC 315 Lab 5 */
