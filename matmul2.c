@@ -16,14 +16,12 @@ void init_cache(void) {
 	cache1[i].v = 0;
 	cache1[i].m = 0;
 	cache1[i].index = i;
-	cache1[i].data = 0;
 	cache1[i].tag = 0;
 
 	if(CACHESIZE > 1) {
 	    cache2[i].v = 0;
 	    cache2[i].m = 0;
 	    cache2[i].index = i;
-	    cache2[i].data = 0;
 	    cache2[i].tag = 0;
 	} 
 
@@ -31,13 +29,11 @@ void init_cache(void) {
 	    cache3[i].v = 0;
 	    cache3[i].m = 0;
 	    cache3[i].index = i;
-	    cache3[i].data = 0;
 	    cache3[i].tag = 0;
 
 	    cache4[i].v = 0;
 	    cache4[i].m = 0;
 	    cache4[i].index = i;
-	    cache4[i].data = 0;
 	    cache4[i].tag = 0;
 	}
     }
@@ -56,7 +52,7 @@ mem_read(int *mp){
     } else {
 	
     }
-    /* printf("Memory read from location %p\n", mp);  */
+    printf("Memory read from location %p\n", mp);
 }
 
 /* This function gets called with each "write" reference to memory */
@@ -67,11 +63,28 @@ mem_write(int *mp) {
 
     if(sizeof(mp) == 32) {
 
+	if(/* modify flag set*/) {
+	    /* write data to memory */
+	} else {
+	    /* set modify flag*/
+	}
+
+	if(/* tag is found*/) {
+	    /* HIT! */
+	    /* change data */
+	    /* set modify tag */
+	} else { /* tag not found */
+	    /* MISS! */
+	    /* change tag to new tag */
+	    /* load new data into cache */
+	}
+
+
     } else {
 	
     }
 
-    /* printf("Memory write to location %p\n", mp); */
+    printf("Memory write to location %p\n", mp);
 }
 
 
