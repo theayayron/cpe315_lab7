@@ -6,7 +6,12 @@
 #include "matmul2.h"
 #include <stdio.h>
 
-static cache_line cache1[CACHESIZE], cache2[CACHESIZE], cache3[CACHESIZE], cache4[CACHESIZE];
+int num_reads = 0, hits = 0;
+
+static cache_line cache1[CACHESIZE];
+static cache_line cache2[CACHESIZE];
+static cache_line cache3[CACHESIZE];
+static cache_line cache4[CACHESIZE];
 
 /*	memory management, code density, Cache emulation - statistics generation */
 /*	Generated for CSC 315 Lab 5 */
@@ -23,7 +28,7 @@ void init_cache(void) {
 	    cache2[i].m = 0;
 	    cache2[i].index = i;
 	    cache2[i].tag = 0;
-	} 
+	}
 
 	if (CACHESIZE == 4) {
 	    cache3[i].v = 0;
@@ -41,16 +46,42 @@ void init_cache(void) {
 
 
 /* This function gets called with each "read" reference to memory */
-
 mem_read(int *mp){
-    uint8_t index;
-    uint8_t offset;
-    uint64_t tag;
+    num_reads += 1;
+    uint8_t index; //
+    uint8_t offset; // 2 bits
+    uint64_t tag; //
 
-    if(sizeof(mp) == 32) {
+    offset = isolate_bits((int)mp, 1, 0);
 
+    if( sizeof(mp) == 32 ) {
+        if (CACHESIZE == 16) {
+            // indes size = 4 bits
+            index = isolate_bits((int)mp, 5, 2);
+
+            // tag size = 32 - 4 -2
+            tag = isolate_bits((int)mp, 31, 6);
+        } else {
+            // index size = 7 bits
+            index = isolate_bits((int)mp, 8, 2);
+
+            // tag = 32 - 7 - 2
+            tag = isolate_bits((int)mp, 31, 9);
+        }
     } else {
-	
+        if (CACHESIZE == 16) {
+            // index size = 4 bits
+            index = isolate_bits((int)mp, 5, 2);
+
+            // tag size = 64 - 4 -2
+            tag = isolate_bits((int)mp, 61, 6);
+        } else {
+            // index size = 7 bits
+            index = isolate_bits((int)mp, 8, 2);
+
+            // tag = 64 - 7 - 2
+            tag = isolate_bits((int)mp, 61, 9);
+        }
     }
     printf("Memory read from location %p\n", mp);
 }
@@ -87,6 +118,16 @@ mem_write(int *mp) {
     printf("Memory write to location %p\n", mp);
 }
 
+int isolate_bits(int base, int start, int end) {
+    int result, mask = 0, i;
+
+    result = base >> end;
+    for (i = 0; i < (start - end + 1); i++) {
+        mask <<= 1;
+        mask |= 1;
+    }
+    return result & mask;
+}
 
 /* Statically define the arrays a, b, and mult, where mult will become the cross product of a and b, i.e., a x b. */
 static int a[AMAX][AMAX], b[AMAX][AMAX], mult[AMAX][AMAX];
@@ -147,7 +188,6 @@ int main(void) {
     }
 
     /* Storing elements of first matrix. */
-    printf("\nEnter elements of matrix 1:\n");
     for(i=0; i<r1; ++i) {
         for (j = 0; j < c1; ++j) {
             a[i][j] = i + j; // build sample data
@@ -156,7 +196,6 @@ int main(void) {
     }
 
     /* Storing elements of second matrix. */
-    printf("\nEnter elements of matrix 2:\n");
     for(i=0; i<r2; ++i) {
         for (j = 0; j < c2; ++j) {
             b[i][j] = 10 + i + j;
