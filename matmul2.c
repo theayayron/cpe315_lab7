@@ -13,13 +13,8 @@ static int cache4[CACHESIZE];
 
 /*	memory management, code density, Cache emulation - statistics generation */
 /*	Generated for CSC 315 Lab 5 */
-<<<<<<< HEAD
-void init_cache(void) {
-  
-} 
 
 /* This function gets called with each "read" reference to memory */
-
 mem_read(int *mp){
     uint8_t index;
     uint8_t offset;
@@ -34,8 +29,6 @@ mem_read(int *mp){
 }
 
 /* This function gets called with each "write" reference to memory */
-<<<<<<< HEAD
-
 mem_write(int *mp) {
     uint8_t index;
     uint8_t offset;
