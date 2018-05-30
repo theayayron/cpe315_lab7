@@ -6,6 +6,8 @@
 #include "matmul2.h"
 #include <stdio.h>
 
+int num_reads = 0, hits = 0;
+
 static int cache1[CACHESIZE];
 static int cache2[CACHESIZE];
 static int cache3[CACHESIZE];
@@ -16,14 +18,41 @@ static int cache4[CACHESIZE];
 
 /* This function gets called with each "read" reference to memory */
 mem_read(int *mp){
-    uint8_t index;
-    uint8_t offset;
-    uint64_t tag;
+    num_reads += 1;
+    uint8_t index; //
+    uint8_t offset; // 2 bits
+    uint64_t tag; //
 
-    if(sizeof(mp) == 32) {
+    offset = isolate_bits((int)mp, 1, 0);
 
+    if( sizeof(mp) == 32 ) {
+        if (CACHESIZE == 16) {
+            // indes size = 4 bits
+            index = isolate_bits((int)mp, 5, 2);
+
+            // tag size = 32 - 4 -2
+            tag = isolate_bits((int)mp, 31, 6);
+        } else {
+            // index size = 7 bits
+            index = isolate_bits((int)mp, 8, 2);
+
+            // tag = 32 - 7 - 2
+            tag = isolate_bits((int)mp, 31, 9);
+        }
     } else {
-	
+        if (CACHESIZE == 16) {
+            // index size = 4 bits
+            index = isolate_bits((int)mp, 5, 2);
+
+            // tag size = 64 - 4 -2
+            tag = isolate_bits((int)mp, 61, 6);
+        } else {
+            // index size = 7 bits
+            index = isolate_bits((int)mp, 8, 2);
+
+            // tag = 64 - 7 - 2
+            tag = isolate_bits((int)mp, 61, 9);
+        }
     }
     /* printf("Memory read from location %p\n", mp);  */
 }
@@ -43,6 +72,16 @@ mem_write(int *mp) {
     /* printf("Memory write to location %p\n", mp); */
 }
 
+int isolate_bits(int base, int start, int end) {
+    int result, mask = 0, i;
+
+    result = base >> end;
+    for (i = 0; i < (start - end + 1); i++) {
+        mask <<= 1;
+        mask |= 1;
+    }
+    return result & mask;
+}
 
 /* Statically define the arrays a, b, and mult, where mult will become the cross product of a and b, i.e., a x b. */
 static int a[AMAX][AMAX], b[AMAX][AMAX], mult[AMAX][AMAX];
