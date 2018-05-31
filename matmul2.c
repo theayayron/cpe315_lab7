@@ -1,7 +1,7 @@
 #define AMAX 10			/* Maximum (square) array size */
 #define CACHESIM 1		/* Set to 1 if simulating Cache */
-#define CACHESIZE 16            /* Either 16 or 256 */
-#define ASSOCIATIONS 1          /* Set to 1, 2, or 4 */
+#define CACHESIZE 2            /* Either 16 or 256 */
+#define ASSOCIATIONS 2          /* Set to 1, 2, or 4 */
 
 #include "matmul2.h"
 #include <stdio.h>
@@ -38,43 +38,43 @@ void init_cache(void) {
 } 
 
 /* extracts fields based on *mp */
-void extract_fields(int *mp, uin8_t *index, uin8_t *offset, uint64_t *tag) {
-    offset = isolate_bits((int)mp, 1, 0);
+void extract_fields(int *mp, uint8_t *index, uint8_t *offset, uint64_t *tag) {
+    *offset = isolate_bits((long)mp, 1, 0);
 
     if( sizeof(mp) == 32 ) {
         if (CACHESIZE == 16) {
             // indes size = 4 bits
-            *index = isolate_bits((int)mp, 5, 2);
+            *index = isolate_bits((long)mp, 5, 2);
 
             // tag size = 32 - 4 -2
-            *tag = isolate_bits((int)mp, 31, 6);
+            *tag = isolate_bits((long)mp, 31, 6);
         } else {
             // index size = 7 bits
-            *index = isolate_bits((int)mp, 8, 2);
+            *index = isolate_bits((long)mp, 8, 2);
 
             // tag = 32 - 7 - 2
-            *tag = isolate_bits((int)mp, 31, 9);
+            *tag = isolate_bits((long)mp, 31, 9);
         }
     } else {
         if (CACHESIZE == 16) {
             // index size = 4 bits
-            *index = isolate_bits((int)mp, 5, 2);
+            *index = isolate_bits((long)mp, 5, 2);
 
             // tag size = 64 - 4 -2
-            *tag = isolate_bits((int)mp, 61, 6);
+            *tag = isolate_bits((long)mp, 61, 6);
         } else {
             // index size = 7 bits
-            *index = isolate_bits((int)mp, 8, 2);
+            *index = isolate_bits((long)mp, 8, 2);
 
             // tag = 64 - 7 - 2
-            *tag = isolate_bits((int)mp, 61, 9);
+            *tag = isolate_bits((long)mp, 61, 9);
         }
     }    
 }
 
 
 /* This function gets called with each "read" reference to memory */
-mem_read(int *mp){
+void mem_read(int *mp) {
     num_reads += 1;
     uint8_t index; //
     uint8_t offset; // 2 bits
@@ -82,11 +82,35 @@ mem_read(int *mp){
 
     extract_fields(mp, &index, &offset, &tag);
 
+    /* search for tag */
+    if(cache1[index].tag == tag &&
+       cache1[index].v) {
+	hits++;
+
+    } else if(ASSOCIATIONS > 1 &&
+	      cache2[index].tag == tag &&
+	      cache1[index].v) {
+	hits++;
+
+    } else if(ASSOCIATIONS > 2 &&
+	      cache3[index].tag == tag &&
+	      cache1[index].v) {
+	hits++;
+
+    } else if(ASSOCIATIONS > 2 &&
+	      cache4[index].tag == tag &&
+	      cache1[index].v) {
+	hits++;
+
+    } else { /* miss */
+	mem_write(mp);
+    }
+
     printf("Memory read from location %p\n", mp);
 }
 
 /* This function gets called with each "write" reference to memory */
-mem_write(int *mp) {
+void mem_write(int *mp) {
     uint8_t index;
     uint8_t offset;
     uint64_t tag;
@@ -114,7 +138,7 @@ mem_write(int *mp) {
     printf("Memory write to location %p\n", mp);
 }
 
-int isolate_bits(int base, int start, int end) {
+int isolate_bits(long base, int start, int end) {
     int result, mask = 0, i;
 
     result = base >> end;
@@ -166,7 +190,7 @@ int main(void) {
     int r1, c1, r2, c2, i, j, k;
     int *mp1, *mp2, *mp3;
 
-    printf("Size of pointer is: %d\n\n", sizeof(mp1));
+    printf("Size of pointer is: %d\n\n", (int)sizeof(mp1));
 
     printf("Enter rows and column for first matrix: ");
     scanf("%d%d", &r1, &c1);
@@ -182,6 +206,8 @@ int main(void) {
         printf("Enter rows and column for second matrix: ");
         scanf("%d%d",&r2, &c2);
     }
+
+    init_cache();
 
     /* Storing elements of first matrix. */
     for(i=0; i<r1; ++i) {
@@ -209,5 +235,10 @@ int main(void) {
                 printf("\n\n");
         }
     }
+
+    /* Displaying Cache statistics */
+    printf("Read/Write = %d/%d = %0.3f\n", num_reads, num_writes, \
+	   (float)(num_reads)/(float)(num_writes));
+    printf("Hit Rate = %0.1f\n", (hits * 100.0 /(hits + misses)));
     return 0;
 }
